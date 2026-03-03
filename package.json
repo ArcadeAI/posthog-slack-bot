@@ -1,0 +1,40 @@
+{
+  "name": "posthog-slack-bot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.0",
+    "@ai-sdk/mcp": "^1.0.21",
+    "@ai-sdk/openai": "^3.0.29",
+    "@chat-adapter/slack": "^4.15.0",
+    "@chat-adapter/state-memory": "^4.15.0",
+    "@chat-adapter/state-redis": "^4.15.0",
+    "ai": "^6.0.90",
+    "chat": "^4.15.0",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "^15.3.0",
+    "prettier": "^3",
+    "typescript": "^5",
+    "vitest": "^3.0.0"
+  }
+}

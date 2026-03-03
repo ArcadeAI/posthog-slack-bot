@@ -4,7 +4,12 @@ import { createMemoryState } from "@chat-adapter/state-memory";
 import { createRedisState } from "@chat-adapter/state-redis";
 import { generateText, streamText, stepCountIs } from "ai";
 import { getModel, systemPrompt } from "./agent";
-import { getArcadeMCPClient } from "./arcade-mcp";
+import {
+  getArcadeMCPClient,
+  initiateOAuth,
+  getPendingAuthUrl,
+  clearPendingAuthUrl,
+} from "./arcade-mcp";
 import { isChannelAllowed, buildMessages } from "./utils";
 
 // Per-thread state: active PostHog project/org context
@@ -60,6 +65,20 @@ function auditLog(entry: {
 }
 
 /**
+ * Ensure Arcade OAuth is complete before handling a message.
+ * Returns the auth URL if the user needs to authorize, null if already good.
+ */
+async function ensureArcadeAuth(): Promise<string | null> {
+  const result = await initiateOAuth();
+  if (result === "REDIRECT") {
+    const url = getPendingAuthUrl();
+    clearPendingAuthUrl();
+    return url;
+  }
+  return null;
+}
+
+/**
  * Run the PostHog agent with streaming (for @mentions) or non-streaming (for follow-ups).
  */
 async function runAgent(
@@ -71,6 +90,14 @@ async function runAgent(
   const start = Date.now();
   const toolsCalled: string[] = [];
   let mcpClient: Awaited<ReturnType<typeof getArcadeMCPClient>> | undefined;
+
+  const authUrl = await ensureArcadeAuth();
+  if (authUrl) {
+    await thread.post(
+      `I need to connect to Arcade first. Please authorize here:\n${authUrl}\n\nThen @mention me again.`
+    );
+    return;
+  }
 
   await thread.startTyping("Querying PostHog via Arcade...");
   const messages = await buildMessages(thread);
@@ -149,8 +176,8 @@ async function runAgent(
 function getFriendlyError(error: unknown): string {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
-    if (msg.includes("arcade_api_key") || msg.includes("arcade_gateway_url")) {
-      return "Arcade is not configured. Please check the ARCADE_API_KEY and ARCADE_GATEWAY_URL environment variables.";
+    if (msg.includes("arcade_gateway_url")) {
+      return "Arcade is not configured. Please check the ARCADE_GATEWAY_URL environment variable.";
     }
     if (msg.includes("timed out") || msg.includes("timeout")) {
       return "The Arcade gateway is temporarily unavailable. Try again in a few minutes.";
@@ -162,7 +189,7 @@ function getFriendlyError(error: unknown): string {
       return "The Arcade gateway is temporarily unavailable. Try again in a few minutes.";
     }
     if (msg.includes("unauthorized") || msg.includes("403")) {
-      return "Authentication error. Please check the ARCADE_API_KEY configuration.";
+      return "Authentication error. Arcade authorization may have expired — @mention me to re-authorize.";
     }
   }
   return "I\u2019m having trouble processing that right now. Please try again.";

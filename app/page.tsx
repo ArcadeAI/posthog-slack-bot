@@ -39,14 +39,14 @@ async function getHealthStatus(): Promise<HealthStatus> {
 
   const env: EnvStatus[] = [
     {
-      name: "ARCADE_API_KEY",
-      set: Boolean(process.env.ARCADE_API_KEY),
-      required: true,
-    },
-    {
       name: "ARCADE_GATEWAY_URL",
       set: Boolean(process.env.ARCADE_GATEWAY_URL),
       required: true,
+    },
+    {
+      name: "APP_URL",
+      set: Boolean(process.env.APP_URL),
+      required: false,
     },
     {
       name: "SLACK_BOT_TOKEN",

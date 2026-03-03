@@ -33,8 +33,8 @@ Fill in `.env`:
 
 | Variable | Where to find it |
 |---|---|
-| `ARCADE_API_KEY` | [app.arcade.dev/settings/api-keys](https://app.arcade.dev/settings/api-keys) |
 | `ARCADE_GATEWAY_URL` | [app.arcade.dev/mcp-gateways](https://app.arcade.dev/mcp-gateways) — create a gateway, add the PostHog toolkit, copy the URL |
+| `APP_URL` | Your deployment URL (e.g. `https://your-app.vercel.app`) — required for the OAuth callback |
 | `SLACK_BOT_TOKEN` | Slack app config → OAuth & Permissions → Bot User OAuth Token |
 | `SLACK_SIGNING_SECRET` | Slack app config → Basic Information → Signing Secret |
 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |

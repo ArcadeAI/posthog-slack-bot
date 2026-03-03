@@ -64,6 +64,7 @@ oauth_config:
       - im:history
       - mpim:history
       - reactions:write
+      - users:read
 settings:
   event_subscriptions:
     request_url: YOUR_URL/api/chat-webhook

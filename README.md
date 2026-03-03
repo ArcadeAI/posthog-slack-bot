@@ -1,6 +1,8 @@
 # posthog-slack-bot
 
-A Slack bot that lets your team chat with PostHog analytics data. Ask questions in natural language and get answers powered by PostHog's MCP server and Claude or GPT-4.
+A Slack bot that lets your team chat with PostHog analytics data. Ask questions in natural language and get answers powered by the [Arcade MCP Gateway](https://app.arcade.dev/mcp-gateways) + PostHog toolkit, and Claude or GPT-4.
+
+> **Branch:** `arcade-gateway` — uses Arcade as the MCP backend instead of connecting to PostHog's MCP server directly. See `main` for the direct PostHog MCP version.
 
 ## Features
 
@@ -31,7 +33,8 @@ Fill in `.env`:
 
 | Variable | Where to find it |
 |---|---|
-| `POSTHOG_API_KEY` | PostHog → Settings → API keys → Personal API keys |
+| `ARCADE_API_KEY` | [app.arcade.dev/settings/api-keys](https://app.arcade.dev/settings/api-keys) |
+| `ARCADE_GATEWAY_URL` | [app.arcade.dev/mcp-gateways](https://app.arcade.dev/mcp-gateways) — create a gateway, add the PostHog toolkit, copy the URL |
 | `SLACK_BOT_TOKEN` | Slack app config → OAuth & Permissions → Bot User OAuth Token |
 | `SLACK_SIGNING_SECRET` | Slack app config → Basic Information → Signing Secret |
 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
@@ -169,14 +172,14 @@ app/
 src/
   bot.ts                    # Chat SDK instance + event handlers
   agent.ts                  # Model selection + system prompt loading
-  posthog-mcp.ts            # PostHog MCP client (Bearer token auth)
+  arcade-mcp.ts             # Arcade MCP Gateway client (Bearer token auth)
 system-prompt.md            # Editable system prompt
 ```
 
 The bot uses:
 - **[Chat SDK](https://github.com/vercel/chat)** for Slack event handling and threading
 - **[Vercel AI SDK](https://sdk.vercel.ai)** for LLM calls with MCP tool use
-- **[PostHog MCP](https://mcp.posthog.com)** for analytics tools
+- **[Arcade MCP Gateway](https://app.arcade.dev/mcp-gateways)** + PostHog toolkit for analytics tools
 
 ## Security
 

@@ -1,4 +1,4 @@
-import { getPostHogMCPUrl } from "@/src/posthog-mcp";
+import { getArcadeGatewayUrl } from "@/src/arcade-mcp";
 
 interface EnvStatus {
   name: string;
@@ -29,13 +29,23 @@ async function checkMCPHealth(url: string): Promise<boolean> {
 }
 
 async function getHealthStatus(): Promise<HealthStatus> {
-  const mcpUrl = getPostHogMCPUrl();
-  const mcpReachable = await checkMCPHealth(mcpUrl);
+  let mcpUrl: string;
+  try {
+    mcpUrl = getArcadeGatewayUrl();
+  } catch {
+    mcpUrl = "(not configured)";
+  }
+  const mcpReachable = mcpUrl !== "(not configured)" ? await checkMCPHealth(mcpUrl) : false;
 
   const env: EnvStatus[] = [
     {
-      name: "POSTHOG_API_KEY",
-      set: Boolean(process.env.POSTHOG_API_KEY),
+      name: "ARCADE_API_KEY",
+      set: Boolean(process.env.ARCADE_API_KEY),
+      required: true,
+    },
+    {
+      name: "ARCADE_GATEWAY_URL",
+      set: Boolean(process.env.ARCADE_GATEWAY_URL),
       required: true,
     },
     {

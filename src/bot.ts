@@ -4,7 +4,7 @@ import { createMemoryState } from "@chat-adapter/state-memory";
 import { createRedisState } from "@chat-adapter/state-redis";
 import { generateText, streamText, stepCountIs } from "ai";
 import { getModel, systemPrompt } from "./agent";
-import { getPostHogMCPClient } from "./posthog-mcp";
+import { getArcadeMCPClient } from "./arcade-mcp";
 import { isChannelAllowed, buildMessages } from "./utils";
 
 // Per-thread state: active PostHog project/org context
@@ -70,16 +70,16 @@ async function runAgent(
 ): Promise<void> {
   const start = Date.now();
   const toolsCalled: string[] = [];
-  let mcpClient: Awaited<ReturnType<typeof getPostHogMCPClient>> | undefined;
+  let mcpClient: Awaited<ReturnType<typeof getArcadeMCPClient>> | undefined;
 
-  await thread.startTyping("Querying PostHog...");
+  await thread.startTyping("Querying PostHog via Arcade...");
   const messages = await buildMessages(thread);
 
   try {
     // Retry once on MCP connection failure
-    mcpClient = await getPostHogMCPClient().catch(async (err) => {
+    mcpClient = await getArcadeMCPClient().catch(async (err) => {
       await new Promise((r) => setTimeout(r, 2_000));
-      return getPostHogMCPClient().catch(() => {
+      return getArcadeMCPClient().catch(() => {
         throw err;
       });
     });
@@ -149,20 +149,20 @@ async function runAgent(
 function getFriendlyError(error: unknown): string {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
-    if (msg.includes("posthog_api_key") || msg.includes("api key")) {
-      return "PostHog API key is not configured. Please check the POSTHOG_API_KEY environment variable.";
+    if (msg.includes("arcade_api_key") || msg.includes("arcade_gateway_url")) {
+      return "Arcade is not configured. Please check the ARCADE_API_KEY and ARCADE_GATEWAY_URL environment variables.";
     }
     if (msg.includes("timed out") || msg.includes("timeout")) {
-      return "PostHog\u2019s API is temporarily unavailable. Try again in a few minutes.";
+      return "The Arcade gateway is temporarily unavailable. Try again in a few minutes.";
     }
     if (msg.includes("rate") || msg.includes("429")) {
       return "I\u2019m getting rate-limited. Please wait a moment before trying again.";
     }
     if (msg.includes("mcp") || msg.includes("connection")) {
-      return "PostHog\u2019s API is temporarily unavailable. Try again in a few minutes.";
+      return "The Arcade gateway is temporarily unavailable. Try again in a few minutes.";
     }
     if (msg.includes("unauthorized") || msg.includes("403")) {
-      return "Authentication error. Please check the PostHog API key configuration.";
+      return "Authentication error. Please check the ARCADE_API_KEY configuration.";
     }
   }
   return "I\u2019m having trouble processing that right now. Please try again.";
